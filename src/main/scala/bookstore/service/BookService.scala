@@ -44,21 +44,27 @@ class BookService {
   }
 
   //getting info of a book
-  def bookInfoByName(): String =
+  def bookInfoByName(bookId: Int): String =
   {
     var bookList: List[Book] = Nil
     val query = "SELECT * FROM pagero.books";
     bookList = getResultSet(query)
-
-
+    var jsonString = ""
     val gson = new Gson
-    val jsonString = gson.toJson(bookList(0))
+
+    try{
+      jsonString = gson.toJson(bookList(0))
+    }catch {
+      case e => e.printStackTrace
+    }
+
     jsonString
   }
 
 //  insert book data
-  def addBook(jsonString: String): Unit =
+  def addBook(jsonString: String): String =
   {
+    var response: String = "Book added successfully"
 
     implicit val formats = DefaultFormats
 
@@ -82,8 +88,16 @@ class BookService {
     preparedStmt.setDouble(3, newBook.price)
     preparedStmt.setString (4, newBook.description)
 
-    preparedStmt.execute
+    try{
+      preparedStmt.execute
+    } catch {
+      case e => e.printStackTrace
+        response = "Book not added..."
+    }
+
     preparedStmt.close()
+
+    response
 
   }
 

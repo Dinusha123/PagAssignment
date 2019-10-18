@@ -30,15 +30,15 @@ public class SimpleHttpServer {
         // test
         server.createContext("/store", new MyHandler());
 
-        // view all books
+        // book controller
         server.createContext("/store/books", new BooksController());
 
-        // get info of a book
-        server.createContext("/store/booksz", new BookInfoController());
-
-        // add new book
-        server.createContext("/store/", new AddBookController());
-
+//        // get info of a book
+//        server.createContext("/store/booksz", new BookInfoController());
+//
+//        // add new book
+//        server.createContext("/store/", new AddBookController());
+//
 
 
         server.setExecutor(null); // creates a default executor
@@ -61,51 +61,33 @@ public class SimpleHttpServer {
         public void handle(HttpExchange httpExchange) throws IOException {
 
             BookService bookService = new BookService();
-
-//            List<Book> bookList = bookService.getBookList();
-            String response = bookService.getList();
-            writeResponse(httpExchange,response);
-        }
-    }
-
-    static class BookInfoController implements HttpHandler {
-        @Override
-        public void handle(HttpExchange httpExchange) throws IOException {
-
-            StringBuilder response = new StringBuilder();
-            Map <String,String>parms = SimpleHttpServer.queryToMap(httpExchange.getRequestURI().getQuery());
-
-            System.out.println("book id :"+parms.get("id"));
-
-
-            BookService bookService = new BookService();
-            String book = bookService.bookInfoByName();
-            writeResponse(httpExchange,book);
-
-        }
-    }
-
-    static class AddBookController implements HttpHandler {
-        @Override
-        public void handle(HttpExchange httpExchange) throws IOException {
-
-            BookService bookService = new BookService();
+            String method = httpExchange.getRequestMethod();
             String response = "";
 
-            String method = httpExchange.getRequestMethod();
+            if("GET".equals(method)){
 
-            if("POST".equals(method)){
+                if(httpExchange.getRequestURI().getQuery() == null){
+                    // return list of book names
+                    response = bookService.getList();
+                }else {
+                    // return book data by id
+                    Map <String,String>params = SimpleHttpServer.queryToMap(httpExchange.getRequestURI().getQuery());
+                    response = bookService.bookInfoByName(Integer.parseInt(params.get("id")));
+
+                    if("".equals(response)){
+                        response = "Invalid book id";
+                    }
+
+                }
+            }else if ("POST".equals(method)){
                 StringBuilder body = new StringBuilder();
                 try (InputStreamReader reader = new InputStreamReader(httpExchange.getRequestBody(), UTF_8)) {
                     char[] buffer = new char[256];
                     int read;
                     while ((read = reader.read(buffer)) != -1) {
                         body.append(buffer, 0, read);
-//                    System.out.println(buffer);
                     }
-                    bookService.addBook(body.toString());
-
-                    response = "Book added successfully";
+                    response = bookService.addBook(body.toString());
 
                 }catch (JSONException err){
 
@@ -115,9 +97,59 @@ public class SimpleHttpServer {
             }
 
             writeResponse(httpExchange,response);
-
         }
     }
+
+//    static class BookInfoController implements HttpHandler {
+//        @Override
+//        public void handle(HttpExchange httpExchange) throws IOException {
+//
+//            StringBuilder response = new StringBuilder();
+//            Map <String,String>parms = SimpleHttpServer.queryToMap(httpExchange.getRequestURI().getQuery());
+//
+//            System.out.println("book id :"+parms.get("id"));
+//
+//
+//            BookService bookService = new BookService();
+//            String book = bookService.bookInfoByName();
+//            writeResponse(httpExchange,book);
+//
+//        }
+//    }
+
+//    static class AddBookController implements HttpHandler {
+//        @Override
+//        public void handle(HttpExchange httpExchange) throws IOException {
+//
+//            BookService bookService = new BookService();
+//            String response = "";
+//
+//            String method = httpExchange.getRequestMethod();
+//
+//            if("POST".equals(method)){
+//                StringBuilder body = new StringBuilder();
+//                try (InputStreamReader reader = new InputStreamReader(httpExchange.getRequestBody(), UTF_8)) {
+//                    char[] buffer = new char[256];
+//                    int read;
+//                    while ((read = reader.read(buffer)) != -1) {
+//                        body.append(buffer, 0, read);
+////                    System.out.println(buffer);
+//                    }
+//                    bookService.addBook(body.toString());
+//
+//                    response = "Book added successfully";
+//
+//                }catch (JSONException err){
+//
+//                    System.out.println("Error"+err.toString());
+//                    response = "Book not added";
+//                }
+//            }
+//
+//            writeResponse(httpExchange,response);
+//
+//        }
+//    }
 
     public static void writeResponse(HttpExchange httpExchange, String response) throws IOException {
 

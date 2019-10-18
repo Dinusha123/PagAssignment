@@ -2,6 +2,7 @@ package bookstore.model
 
 class Book {
 
+  private var _id: Int = _
   private var _name: String = _
   private var _author: String = _
   private var _price: Double = _
@@ -12,6 +13,7 @@ class Book {
   def author: String = _author
   def price: Double = _price
   def description: String = _description
+  def id: Int = _id
 
   //setter methods
   def name_= (name: String){
@@ -28,6 +30,10 @@ class Book {
 
   def description_= (description: String){
     _description = description
+  }
+
+  def id_= (id: Int){
+    _id = id
   }
 
 
