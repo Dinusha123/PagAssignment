@@ -23,7 +23,7 @@ import static com.sun.xml.internal.ws.model.RuntimeModeler.RESPONSE;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class controller {
+public class SimpleHttpServer {
     public static void main(String[] args) throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
 
@@ -34,10 +34,10 @@ public class controller {
         server.createContext("/store/books", new BooksController());
 
         // get info of a book
-        server.createContext("/store/books/name", new BookInfoController());
+        server.createContext("/store/booksz", new BookInfoController());
 
-        // get info of a book
-        server.createContext("/store/books/add", new AddBookController());
+        // add new book
+        server.createContext("/store/", new AddBookController());
 
 
 
@@ -72,12 +72,10 @@ public class controller {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
 
-//            Map<String, String> params = queryToMap(httpExchange.getRequestURI().getQuery());
-//            System.out.println("param A=" + params.get("A"));
+            StringBuilder response = new StringBuilder();
+            Map <String,String>parms = SimpleHttpServer.queryToMap(httpExchange.getRequestURI().getQuery());
 
-//            Headers map = httpExchange.getRequestHeaders();
-//            Headers rmap = httpExchange.getResponseHeaders();
-//            URI uri = httpExchange.getRequestURI();
+            System.out.println("book id :"+parms.get("id"));
 
 
             BookService bookService = new BookService();
@@ -127,6 +125,24 @@ public class controller {
         OutputStream os = httpExchange.getResponseBody();
         os.write(response.getBytes());
         os.close();
+    }
+
+    /**
+     * returns the url parameters in a map
+     * @param query
+     * @return map
+     */
+    public static Map<String, String> queryToMap(String query){
+        Map<String, String> result = new HashMap<String, String>();
+        for (String param : query.split("&")) {
+            String pair[] = param.split("=");
+            if (pair.length>1) {
+                result.put(pair[0], pair[1]);
+            }else{
+                result.put(pair[0], "");
+            }
+        }
+        return result;
     }
 
 }
