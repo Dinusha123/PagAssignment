@@ -5,11 +5,11 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import org.json.JSONException;
+import org.json.JSONObject;
 import scala.collection.immutable.List;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.HashMap;
@@ -17,6 +17,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONArray;
+import sun.rmi.runtime.Log;
+
+import static com.sun.xml.internal.ws.model.RuntimeModeler.RESPONSE;
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class controller {
     public static void main(String[] args) throws Exception {
@@ -87,14 +92,34 @@ public class controller {
         public void handle(HttpExchange httpExchange) throws IOException {
 
             BookService bookService = new BookService();
-            bookService.addBook();
-            writeResponse(httpExchange,"Added");
+            String response = "";
+
+            String method = httpExchange.getRequestMethod();
+
+            if("POST".equals(method)){
+                StringBuilder body = new StringBuilder();
+                try (InputStreamReader reader = new InputStreamReader(httpExchange.getRequestBody(), UTF_8)) {
+                    char[] buffer = new char[256];
+                    int read;
+                    while ((read = reader.read(buffer)) != -1) {
+                        body.append(buffer, 0, read);
+//                    System.out.println(buffer);
+                    }
+                    bookService.addBook(body.toString());
+
+                    response = "Book added successfully";
+
+                }catch (JSONException err){
+
+                    System.out.println("Error"+err.toString());
+                    response = "Book not added";
+                }
+            }
+
+            writeResponse(httpExchange,response);
 
         }
     }
-
-
-
 
     public static void writeResponse(HttpExchange httpExchange, String response) throws IOException {
 
@@ -102,37 +127,6 @@ public class controller {
         OutputStream os = httpExchange.getResponseBody();
         os.write(response.getBytes());
         os.close();
-    }
-
-//    public static  Map<String, String> queryToMap(String query) {
-//        Map<String, String> result = new HashMap<>();
-//        for (String param : query.split("&")) {
-//            String[] entry = param.split("=");
-//            if (entry.length > 1) {
-//                result.put(entry[0], entry[1]);
-//            }else{
-//                result.put(entry[0], "");
-//            }
-//        }
-//        return result;
-//    }
-
-    /**
-     * returns the url parameters in a map
-     * @param query
-     * @return map
-     */
-    public static Map<String, String> queryToMap(String query){
-        Map<String, String> result = new HashMap<String, String>();
-        for (String param : query.split("&")) {
-            String pair[] = param.split("=");
-            if (pair.length>1) {
-                result.put(pair[0], pair[1]);
-            }else{
-                result.put(pair[0], "");
-            }
-        }
-        return result;
     }
 
 }

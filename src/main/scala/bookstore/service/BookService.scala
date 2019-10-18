@@ -1,10 +1,10 @@
 package bookstore.service
-
 import java.sql.{Connection, PreparedStatement}
 
 import bookstore.DbConnection
 import bookstore.model.Book
 import com.google.gson.Gson
+import net.liftweb.json._
 
 class BookService {
   private val  book1: Book = new Book("Test Book 1","Test Author 1",1000,"test description 1")
@@ -51,17 +51,25 @@ class BookService {
     bookList = getResultSet(query)
 
 
-
     val gson = new Gson
     val jsonString = gson.toJson(bookList(0))
     jsonString
   }
 
-  //insert book data
-  def addBook(): Unit =
+//  insert book data
+  def addBook(jsonString: String): Unit =
   {
+
+    implicit val formats = DefaultFormats
+
+    println("Add Book method")
+    val newBookJsonString = parse(jsonString)
+    val newBook = newBookJsonString.extract[Book]
+
+    // inserting data
     val insertSql = """
-                      |insert into pagero.books (name,author,price,description)
+                      |insert
+                      |into pagero.books (name,author,price,description)
                       |values (?,?,?,?)
                     """.stripMargin
 
@@ -69,10 +77,11 @@ class BookService {
     conn = DbConnection.getConnection();
 
     val preparedStmt: PreparedStatement = conn.prepareStatement(insertSql)
-    preparedStmt.setString (1, "Mango Friends")
-    preparedStmt.setString (2, "T.B Ilangarathne")
-    preparedStmt.setInt    (3, 1250)
-    preparedStmt.setString (4, "Nice story ")
+    preparedStmt.setString (1, newBook.name)
+    preparedStmt.setString (2, newBook.author)
+    preparedStmt.setDouble(3, newBook.price)
+    preparedStmt.setString (4, newBook.description)
+
     preparedStmt.execute
     preparedStmt.close()
 
@@ -99,10 +108,6 @@ class BookService {
         def hasNext = resultSet.next()
         def next() = resultSet.getString(1)
       }.toStream
-
-      println("=====================================")
-      println(v)
-
 
 
       while ( resultSet.next() ) {
