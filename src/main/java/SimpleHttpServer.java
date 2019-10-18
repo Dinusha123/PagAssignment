@@ -28,7 +28,7 @@ public class SimpleHttpServer {
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
 
         // test
-        server.createContext("/store", new MyHandler());
+        server.createContext("/info", new MyHandler());
 
         // book controller
         server.createContext("/store/books", new BooksController());
@@ -49,9 +49,16 @@ public class SimpleHttpServer {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
 
-            Book book = new Book("Hound Of The Baskervills","Sir Author Connal Doil",2000.00,"New release 2019");
+//            Book book = new Book("Hound Of The Baskervills","Sir Author Connal Doil",2000.00,"New release 2019");
 //            String response = "This is the response ..Book store";
-            String response = book.name();
+//            String response = book.name();
+            String response = "use store/books?id=6  to get info of a book \n\n"
+                    +"sample data for json string  for POST method store/books \n\n{\n" +
+                    "\t\"name\":\"Test Book\",\n" +
+                    "\t\"author\":\"Test Author\",\n" +
+                    "\t\"price\": 15000,\n" +
+                    "\t\"description\": \" Test description \"\n" +
+                    "}" ;
             writeResponse(httpExchange,response);
         }
     }
@@ -68,11 +75,11 @@ public class SimpleHttpServer {
 
                 if(httpExchange.getRequestURI().getQuery() == null){
                     // return list of book names
-                    response = bookService.getList();
+                    response = bookService.getBookNames();
                 }else {
                     // return book data by id
                     Map <String,String>params = SimpleHttpServer.queryToMap(httpExchange.getRequestURI().getQuery());
-                    response = bookService.bookInfoByName(Integer.parseInt(params.get("id")));
+                    response = bookService.bookInfoById(Integer.parseInt(params.get("id")));
 
                     if("".equals(response)){
                         response = "Invalid book id";

@@ -7,24 +7,24 @@ import com.google.gson.Gson
 import net.liftweb.json._
 
 class BookService {
-  private val  book1: Book = new Book("Test Book 1","Test Author 1",1000,"test description 1")
-  private val  book2: Book = new Book("Test Book 2","Test Author 2",2000,"test description 2")
-  private val  book3: Book = new Book("Test Book 3","Test Author 3",3000,"test description 3")
-  private val  book4: Book = new Book("Test Book 4","Test Author 4",15000,"test description 4")
-  private val  book5: Book = new Book("Test Book 5","Test Author 5",1600,"test description 5")
+//  private val  book1: Book = new Book("Test Book 1","Test Author 1",1000,"test description 1")
+//  private val  book2: Book = new Book("Test Book 2","Test Author 2",2000,"test description 2")
+//  private val  book3: Book = new Book("Test Book 3","Test Author 3",3000,"test description 3")
+//  private val  book4: Book = new Book("Test Book 4","Test Author 4",15000,"test description 4")
+//  private val  book5: Book = new Book("Test Book 5","Test Author 5",1600,"test description 5")
+//
+//  private var books: List[Book] = book1:: book2:: book3:: book4:: book5:: Nil
 
-  private var books: List[Book] = book1:: book2:: book3:: book4:: book5:: Nil
-
-  def getList(): String = {
-
-    var list = ""
-    list = getBookNames(books)
-    list
-  }
+//  def getList(): String = {
+//
+//    var list = ""
+//    list = getBookNames(books)
+//    list
+//  }
 
 
   //getting name list
-  def getBookNames(books: List[Book]): String = {
+  def getBookNames(): String = {
 
     var bookList: List[Book] = Nil
     val query = "SELECT * FROM pagero.books";
@@ -44,7 +44,7 @@ class BookService {
   }
 
   //getting info of a book
-  def bookInfoByName(bookId: Int): String =
+  def bookInfoById(bookId: Int): String =
   {
     var bookList: List[Book] = Nil
     val query = "SELECT * FROM pagero.books";
@@ -61,7 +61,7 @@ class BookService {
     jsonString
   }
 
-//  insert book data
+  //  insert book data
   def addBook(jsonString: String): String =
   {
     var response: String = "Book added successfully"
@@ -125,17 +125,15 @@ class BookService {
 
 
       while ( resultSet.next() ) {
+
         val name = resultSet.getString("name")
         val author = resultSet.getString("author")
-        val price = resultSet.getString("price")
+        val price = resultSet.getDouble("price")
         val description = resultSet.getString("description")
         println("name, author,price,desc = " + name + ", " + author+" ," +price+ ","+author)
 
         //creating book objects
-        var  book: Book = new Book(resultSet.getString("name"),
-                                    resultSet.getString("author"),
-                                    resultSet.getDouble("price"),
-                                    resultSet.getString("description"))
+        var  book: Book = new Book(name,author,price,description)
 
 
         bookList = book::Nil
