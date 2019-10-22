@@ -60,7 +60,8 @@ public class SimpleHttpServer {
 
                 if(httpExchange.getRequestURI().getQuery() == null){
                     // return list of book names
-                    response = bookService.getBookNames();
+//                    response = bookService.getBookNames();
+                    response = bookService.getBooks();
                 }else {
                     // return book data by id
                     Map <String,String>params = SimpleHttpServer.queryToMap(httpExchange.getRequestURI().getQuery());
@@ -95,7 +96,7 @@ public class SimpleHttpServer {
 
     public static void writeResponse(HttpExchange httpExchange, String response) throws IOException {
 
-        httpExchange.sendResponseHeaders(200, response.length());
+        httpExchange.sendResponseHeaders(200, 0);
         OutputStream os = httpExchange.getResponseBody();
         os.write(response.getBytes());
         os.close();

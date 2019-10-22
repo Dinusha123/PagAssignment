@@ -8,14 +8,14 @@ class Book {
   private var _price: Double = _
   private var _description: String = _
 
-  //getter methods
+  //getters
   def name: String = _name
   def author: String = _author
   def price: Double = _price
   def description: String = _description
   def id: Int = _id
 
-  //setter methods
+  //setters
   def name_= (name: String){
     _name = name
   }
@@ -38,11 +38,21 @@ class Book {
 
 
   //constructor
-  def this( name: String,  author: String,  price: Double,  description: String){
+  def this(name: String,  author: String,  price: Double,  description: String){
     this()
     this._name = name
     this._author = author
     this._price = price
     this._description = description
+  }
+
+  //constructor
+  def this(id: Int, name: String,  author: String,  price: Double,  description: String){
+    this()
+    this._name = name
+    this._author = author
+    this._price = price
+    this._description = description
+    this._id = id
   }
 }

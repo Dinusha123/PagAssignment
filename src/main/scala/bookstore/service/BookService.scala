@@ -6,28 +6,38 @@ import bookstore.model.Book
 import com.google.gson.Gson
 import net.liftweb.json._
 
+import scala.collection.mutable
+
 class BookService {
-//  private val  book1: Book = new Book("Test Book 1","Test Author 1",1000,"test description 1")
-//  private val  book2: Book = new Book("Test Book 2","Test Author 2",2000,"test description 2")
-//  private val  book3: Book = new Book("Test Book 3","Test Author 3",3000,"test description 3")
-//  private val  book4: Book = new Book("Test Book 4","Test Author 4",15000,"test description 4")
-//  private val  book5: Book = new Book("Test Book 5","Test Author 5",1600,"test description 5")
-//
-//  private var books: List[Book] = book1:: book2:: book3:: book4:: book5:: Nil
 
-//  def getList(): String = {
-//
-//    var list = ""
-//    list = getBookNames(books)
-//    list
-//  }
+  val query = "SELECT * FROM pagero.books ORDER BY id DESC";
+  val gson = new Gson
+  var jsonString = ""
 
+  /**
+    * Getting book list
+    * @return jason string of entity list
+    */
+  def getBooks(): String = {
 
-  //getting name list
+    var bookList= mutable.MutableList[Book]()
+
+    bookList = getResultSet(query)
+
+    jsonString = gson.toJson(bookList)
+
+    jsonString
+
+  }
+
+  /**
+    * This method is used to get the name list of the book entities
+    * @return string
+    */
   def getBookNames(): String = {
 
-    var bookList: List[Book] = Nil
-    val query = "SELECT * FROM pagero.books";
+    var bookList= mutable.MutableList[Book]()
+
     bookList = getResultSet(query)
 
     var nameList: String = "";
@@ -43,25 +53,46 @@ class BookService {
 
   }
 
-  //getting info of a book
+  /**
+    * This method is used to get the info of a certian book by it's id
+    * @param bookId
+    * @return json string of a book entity
+    */
   def bookInfoById(bookId: Int): String =
   {
-    var bookList: List[Book] = Nil
-    val query = "SELECT * FROM pagero.books";
+    var bookList= mutable.MutableList[Book]()
     bookList = getResultSet(query)
-    var jsonString = ""
-    val gson = new Gson
 
-    try{
-      jsonString = gson.toJson(bookList(0))
-    }catch {
-      case e => e.printStackTrace
-    }
+    val book = bookList.filter(_.id==bookId )
+      try{
+        jsonString = gson.toJson(book(0))
+        //jsonString = gson.toJson(bookList(5))
+      }catch {
+        case e => e.printStackTrace
+      }
+
+
+//    bookList.foreach(
+//      (book: Book)=> if(book.id ==bookId ){
+//        try{
+//          jsonString = gson.toJson(book)
+////          jsonString = gson.toJson(bookList(5))
+//
+//
+//        }catch {
+//          case e => e.printStackTrace
+//        }
+//      }
+//    )
 
     jsonString
   }
 
-  //  insert book data
+  /**
+    * This method is used to insert new book records
+    * @param jsonString
+    * @return String
+    */
   def addBook(jsonString: String): String =
   {
     var response: String = "Book added successfully"
@@ -101,12 +132,17 @@ class BookService {
 
   }
 
-  def getResultSet(query: String): List[Book]= {
+  /**
+    * This is common method which extracts the result set once the query is given as an argument
+    * @param query SQL query
+    * @return Mutable List of Book objects
+    */
+  def getResultSet(query: String): mutable.MutableList[Book]= {
 
     // there's probably a better way to do this
     var connection:Connection = null
 
-    var bookList: List[Book] = Nil
+    var bookList= mutable.MutableList[Book]()
 
     try {
 
@@ -126,17 +162,17 @@ class BookService {
 
       while ( resultSet.next() ) {
 
+        val id = resultSet.getInt("id")
         val name = resultSet.getString("name")
         val author = resultSet.getString("author")
         val price = resultSet.getDouble("price")
         val description = resultSet.getString("description")
-        println("name, author,price,desc = " + name + ", " + author+" ," +price+ ","+author)
+        println("Id :"+id+" Name :"+name+" Author :"+author+" Price :"+price+" Description :"+description)
 
         //creating book objects
-        var  book: Book = new Book(name,author,price,description)
+        var  book: Book = new Book(id,name,author,price,description)
 
-
-        bookList = book::Nil
+        bookList += book
       }
 
     } catch {
