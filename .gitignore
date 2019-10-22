@@ -94,3 +94,7 @@ fabric.properties
 *.log
 
 # End of https://www.gitignore.io/api/scala,intellij
+PagAssignment.iml
+src/main/java/SimpleHttpServer2.java
+target/classes/META-INF/PagAssignment.kotlin_module
+PagAssignment.iml
