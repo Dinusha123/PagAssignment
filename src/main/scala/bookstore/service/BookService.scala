@@ -7,12 +7,14 @@ import com.google.gson.Gson
 import net.liftweb.json._
 
 import scala.collection.mutable
+import scala.util.{Failure, Success, Try}
 
 class BookService {
 
   val query = "SELECT * FROM pagero.books ORDER BY id DESC";
   val gson = new Gson
   var jsonString = ""
+  var connection:Connection = null
 
   /**
     * Getting book list
@@ -54,22 +56,30 @@ class BookService {
   }
 
   /**
-    * This method is used to get the info of a certian book by it's id
+    * This method is used to get the info of a certain book by it's id
     * @param bookId
     * @return json string of a book entity
     */
-  def bookInfoById(bookId: Int): String =
+  def bookInfoById(bookId: String): String =
   {
-    var bookList= mutable.MutableList[Book]()
-    bookList = getResultSet(query)
 
-    val book = bookList.filter(_.id==bookId )
-      try{
-        jsonString = gson.toJson(book(0))
-        //jsonString = gson.toJson(bookList(5))
-      }catch {
-        case e => e.printStackTrace
-      }
+    toInt(bookId) match {
+
+      case Success(bookId) =>
+
+        var bookList= mutable.MutableList[Book]()
+        bookList = getResultSet(query)
+        val book = bookList.filter(_.id==bookId )
+        try{
+          jsonString = gson.toJson(book(0))
+          //jsonString = gson.toJson(bookList(5))
+        }catch {
+          case e => e.printStackTrace
+        }
+
+      case Failure(s) => jsonString = "Please enter a number ..."
+    }
+
     jsonString
   }
 
@@ -95,10 +105,9 @@ class BookService {
                       |values (?,?,?,?)
                     """.stripMargin
 
-    var conn:Connection = null
-    conn = DbConnection.getConnection();
+    connection = DbConnection.getConnection();
 
-    val preparedStmt: PreparedStatement = conn.prepareStatement(insertSql)
+    val preparedStmt: PreparedStatement = connection.prepareStatement(insertSql)
     preparedStmt.setString (1, newBook.name)
     preparedStmt.setString (2, newBook.author)
     preparedStmt.setDouble(3, newBook.price)
@@ -123,8 +132,6 @@ class BookService {
     * @return Mutable List of Book objects
     */
   def getResultSet(query: String): mutable.MutableList[Book]= {
-
-    var connection:Connection = null
 
     var bookList= mutable.MutableList[Book]()
 
@@ -166,6 +173,16 @@ class BookService {
 
     bookList.foreach( x => print(x.name+" | "))
     bookList
+  }
+
+  /**
+    *This method is used to convert string to int and
+    *  used Try[T] : Scala Try, Success, Failure
+    * @param s
+    * @return
+    */
+  def toInt(s: String): Try[Int] = Try {
+    Integer.parseInt(s.trim)
   }
 
 

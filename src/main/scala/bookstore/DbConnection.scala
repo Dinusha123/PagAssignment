@@ -11,8 +11,6 @@ object DbConnection extends App{
     val username = "postgres"
     val password = "password"
 
-    println("url "+url," username "+username, " password "+ password)
-
     // make the connection
     Class.forName(driver)
     connection = DriverManager.getConnection(url, username, password)

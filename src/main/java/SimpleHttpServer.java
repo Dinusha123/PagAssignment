@@ -56,7 +56,7 @@ public class SimpleHttpServer {
                 }else {
                     // return book info data by id
                     Map <String,String>params = SimpleHttpServer.queryToMap(httpExchange.getRequestURI().getQuery());
-                    response = bookService.bookInfoById(Integer.parseInt(params.get("id")));
+                    response = bookService.bookInfoById(params.get("id"));
 
                     if("".equals(response)){
                         response = "Invalid book id";
