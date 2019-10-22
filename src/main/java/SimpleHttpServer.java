@@ -1,14 +1,8 @@
-import bookstore.model.Book;
 import bookstore.service.BookService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import org.json.JSONException;
-import org.json.JSONObject;
-import scala.collection.immutable.List;
-
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -20,7 +14,7 @@ public class SimpleHttpServer {
     public static void main(String[] args) throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
 
-        // test
+        // info
         server.createContext("/info", new MyHandler());
 
         // book controller
@@ -34,9 +28,6 @@ public class SimpleHttpServer {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
 
-//            Book book = new Book("Hound Of The Baskervills","Sir Author Connal Doil",2000.00,"New release 2019");
-//            String response = "This is the response ..Book store";
-//            String response = book.name();
             String response = "use store/books?id=6  to get info of a book \n\n"
                     +"sample data for json string  for POST method store/books \n\n{\n" +
                     "\t\"name\":\"Test Book\",\n" +
@@ -63,7 +54,7 @@ public class SimpleHttpServer {
 //                    response = bookService.getBookNames();
                     response = bookService.getBooks();
                 }else {
-                    // return book data by id
+                    // return book info data by id
                     Map <String,String>params = SimpleHttpServer.queryToMap(httpExchange.getRequestURI().getQuery());
                     response = bookService.bookInfoById(Integer.parseInt(params.get("id")));
 

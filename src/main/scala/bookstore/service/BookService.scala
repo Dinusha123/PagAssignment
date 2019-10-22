@@ -70,21 +70,6 @@ class BookService {
       }catch {
         case e => e.printStackTrace
       }
-
-
-//    bookList.foreach(
-//      (book: Book)=> if(book.id ==bookId ){
-//        try{
-//          jsonString = gson.toJson(book)
-////          jsonString = gson.toJson(bookList(5))
-//
-//
-//        }catch {
-//          case e => e.printStackTrace
-//        }
-//      }
-//    )
-
     jsonString
   }
 
