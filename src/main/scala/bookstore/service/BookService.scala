@@ -139,7 +139,6 @@ class BookService {
     */
   def getResultSet(query: String): mutable.MutableList[Book]= {
 
-    // there's probably a better way to do this
     var connection:Connection = null
 
     var bookList= mutable.MutableList[Book]()
