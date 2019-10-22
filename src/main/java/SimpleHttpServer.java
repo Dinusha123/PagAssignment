@@ -1,3 +1,4 @@
+import bookstore.controller.BookController;
 import bookstore.service.BookService;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -15,7 +16,7 @@ public class SimpleHttpServer {
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
 
         // info
-        server.createContext("/info", new MyHandler());
+        server.createContext("/info", new BookController());
 
         // book controller
         server.createContext("/store/books", new BooksController());
@@ -49,20 +50,6 @@ public class SimpleHttpServer {
 
             if("GET".equals(method)){
 
-                if(httpExchange.getRequestURI().getQuery() == null){
-                    // return list of book names
-//                    response = bookService.getBookNames();
-                    response = bookService.getBooks();
-                }else {
-                    // return book info data by id
-                    Map <String,String>params = SimpleHttpServer.queryToMap(httpExchange.getRequestURI().getQuery());
-                    response = bookService.bookInfoById(params.get("id"));
-
-                    if("".equals(response)){
-                        response = "Invalid book id";
-                    }
-
-                }
             }else if ("POST".equals(method)){
                 StringBuilder body = new StringBuilder();
                 try (InputStreamReader reader = new InputStreamReader(httpExchange.getRequestBody(), UTF_8)) {
@@ -71,7 +58,7 @@ public class SimpleHttpServer {
                     while ((read = reader.read(buffer)) != -1) {
                         body.append(buffer, 0, read);
                     }
-                    response = bookService.addBook(body.toString());
+//                    response = bookService.addBook(body.toString());
 
                 }catch (JSONException err){
 

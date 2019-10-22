@@ -7,7 +7,7 @@ import com.google.gson.Gson
 import net.liftweb.json._
 
 import scala.collection.mutable
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 class BookService {
 
@@ -20,15 +20,16 @@ class BookService {
     * Getting book list
     * @return jason string of entity list
     */
-  def getBooks(): String = {
+  def getBooks(): mutable.MutableList[Book] = {
 
     var bookList= mutable.MutableList[Book]()
 
     bookList = getResultSet(query)
 
-    jsonString = gson.toJson(bookList)
-
-    jsonString
+//    jsonString = gson.toJson(bookList)
+//
+//    jsonString
+    bookList
 
   }
 
@@ -60,27 +61,12 @@ class BookService {
     * @param bookId
     * @return json string of a book entity
     */
-  def bookInfoById(bookId: String): String =
+  def bookInfoById(bookId: Int): Book =
   {
-
-    toInt(bookId) match {
-
-      case Success(bookId) =>
-
-        var bookList= mutable.MutableList[Book]()
-        bookList = getResultSet(query)
-        val book = bookList.filter(_.id==bookId )
-        try{
-          jsonString = gson.toJson(book(0))
-          //jsonString = gson.toJson(bookList(5))
-        }catch {
-          case e => e.printStackTrace
-        }
-
-      case Failure(s) => jsonString = "Please enter a number ..."
-    }
-
-    jsonString
+    var bookList= mutable.MutableList[Book]()
+    bookList = getResultSet(query)
+    val book = bookList.filter(_.id==bookId )
+    book(0)
   }
 
   /**
