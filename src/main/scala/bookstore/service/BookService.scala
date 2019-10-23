@@ -1,11 +1,10 @@
 package bookstore.service
-import java.sql.{Connection, PreparedStatement}
 
+import java.sql.{Connection, PreparedStatement}
 import bookstore.DbConnection
 import bookstore.model.Book
 import com.google.gson.Gson
 import net.liftweb.json._
-
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 

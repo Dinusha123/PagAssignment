@@ -51,7 +51,6 @@ public class SimpleHttpServer {
 
                 if(httpExchange.getRequestURI().getQuery() == null){
                     // return list of book names
-//                    response = bookService.getBookNames();
                     response = bookService.getBooks();
                 }else {
                     // return book info data by id
