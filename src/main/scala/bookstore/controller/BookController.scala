@@ -1,9 +1,13 @@
 package bookstore.controller
+import java.io.InputStreamReader
 import java.net.URLDecoder
+import java.nio.charset.StandardCharsets.UTF_8
 import java.util.logging.Logger
+
 import bookstore.service.BookService
 import com.google.gson.Gson
 import com.sun.net.httpserver.{HttpExchange, HttpHandler}
+
 import scala.collection.JavaConversions._
 import scala.util.parsing.json.JSONArray
 
@@ -38,10 +42,32 @@ class BookController extends HttpHandler{
       }
 
     }else if("POST" == requestedMethod){
-//      response = bookService.addBook(exchange)
+      //      response = bookService.addBook(exchange)
+
+      try{
+        val reader: InputStreamReader  = new InputStreamReader(exchange.getRequestBody, UTF_8)
+        val buffer = new Array[Char](256)
+        var read = 0
+        val body = new StringBuilder
+
+        while ( {
+          (read = reader.read(buffer)) != -1
+        }) body.append(buffer, 0, read)
+
+        println("=============="+body.toString())
+
+
+      }catch {
+        case e => e.printStackTrace
+      }
+
+
+
+
+
+
     }
-
-
+    
     exchange.sendResponseHeaders(200, 0)
     val os = exchange.getResponseBody()
     os.write(response.getBytes())
