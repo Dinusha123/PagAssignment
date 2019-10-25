@@ -13,7 +13,7 @@ class BookService {
   val query = "SELECT * FROM pagero.books ORDER BY id DESC";
   val gson = new Gson
   var jsonString = ""
-  var connection:Connection = null
+  var connection:Connection = _
 
   /**
     * Getting book list
