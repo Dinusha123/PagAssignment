@@ -1,15 +1,11 @@
 package bookstore.controller
 import java.net.URLDecoder
 import java.util.logging.Logger
-
 import bookstore.service.BookService
 import com.google.gson.Gson
 import com.sun.net.httpserver.{HttpExchange, HttpHandler}
-
 import scala.collection.JavaConversions._
 import scala.util.parsing.json.JSONArray
-
-
 
 
 class BookController extends HttpHandler{
@@ -18,6 +14,7 @@ class BookController extends HttpHandler{
   var hits = 0
   val gson = new Gson
   var bookService: BookService = new BookService
+  var statusCode = 200
 
   override def handle(exchange: HttpExchange) {
 
@@ -35,15 +32,25 @@ class BookController extends HttpHandler{
       }else{
 
         val params = parseParams(exchange)
-        val book = bookService.bookInfoById(Integer.parseInt(params("id")))
-        response =gson.toJson(book)
+
+        try{
+          val book = bookService.bookInfoById(params("id"))
+
+          if(book == null) response ="Please enter number as id"  else
+            response =gson.toJson(book)
+
+        } catch {
+          case e => e.printStackTrace
+            response = "Wrong id"
+            statusCode = 400
+        }
       }
 
     }else if("POST" == requestedMethod){
       response = bookService.addBook(exchange)
     }
 
-    exchange.sendResponseHeaders(200, 0)
+    exchange.sendResponseHeaders(statusCode, 0)
     val os = exchange.getResponseBody()
     os.write(response.getBytes())
     os.flush()

@@ -1,13 +1,15 @@
 package bookstore.service
 
 import java.sql.{Connection, PreparedStatement}
+
 import bookstore.DbConnection
 import bookstore.model.Book
 import com.google.gson.Gson
 import com.sun.net.httpserver.HttpExchange
 import net.liftweb.json._
+
 import scala.collection.mutable
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class BookService {
 
@@ -15,7 +17,6 @@ class BookService {
   val gson = new Gson
   var jsonString = ""
   var connection:Connection = _
-  var statusCode: Int = 200
 
   /**
     * Getting book list
@@ -59,12 +60,18 @@ class BookService {
     * @param bookId
     * @return json string of a book entity
     */
-  def bookInfoById(bookId: Int): Book =
+  def bookInfoById(bookId: String): Book =
   {
-    var bookList= mutable.MutableList[Book]()
-    bookList = getResultSet(query)
-    val book = bookList.filter(_.id==bookId )
-    book(0)
+    toInt(bookId) match {
+      case Success(bookId) =>
+
+        var bookList= mutable.MutableList[Book]()
+        bookList = getResultSet(query)
+        val book = bookList.filter(_.id==bookId )
+        book(0)
+
+      case Failure(s) => null
+    }
   }
 
   /**
