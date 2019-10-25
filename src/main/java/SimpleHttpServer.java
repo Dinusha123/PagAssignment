@@ -16,10 +16,10 @@ public class SimpleHttpServer {
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
 
         // info
-        server.createContext("/info", new BookController());
+        server.createContext("/info", new MyHandler());
 
         // book controller
-        server.createContext("/store/books", new BooksController());
+        server.createContext("/store/books", new BookController());
 
         server.setExecutor(null); // creates a default executor
         server.start();
@@ -39,38 +39,6 @@ public class SimpleHttpServer {
             writeResponse(httpExchange,response);
         }
     }
-
-    static class BooksController implements HttpHandler {
-        @Override
-        public void handle(HttpExchange httpExchange) throws IOException {
-
-            BookService bookService = new BookService();
-            String method = httpExchange.getRequestMethod();
-            String response = "";
-
-            if("GET".equals(method)){
-
-            }else if ("POST".equals(method)){
-                StringBuilder body = new StringBuilder();
-                try (InputStreamReader reader = new InputStreamReader(httpExchange.getRequestBody(), UTF_8)) {
-                    char[] buffer = new char[256];
-                    int read;
-                    while ((read = reader.read(buffer)) != -1) {
-                        body.append(buffer, 0, read);
-                    }
-//                    response = bookService.addBook(body.toString());
-
-                }catch (JSONException err){
-
-                    System.out.println("Error"+err.toString());
-                    response = "Book not added";
-                }
-            }
-
-            writeResponse(httpExchange,response);
-        }
-    }
-
 
     public static void writeResponse(HttpExchange httpExchange, String response) throws IOException {
 

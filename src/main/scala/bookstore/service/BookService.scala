@@ -1,11 +1,11 @@
 package bookstore.service
-import java.sql.{Connection, PreparedStatement}
 
+import java.sql.{Connection, PreparedStatement}
 import bookstore.DbConnection
 import bookstore.model.Book
 import com.google.gson.Gson
+import com.sun.net.httpserver.HttpExchange
 import net.liftweb.json._
-
 import scala.collection.mutable
 import scala.util.Try
 
@@ -14,7 +14,8 @@ class BookService {
   val query = "SELECT * FROM pagero.books ORDER BY id DESC";
   val gson = new Gson
   var jsonString = ""
-  var connection:Connection = null
+  var connection:Connection = _
+  var statusCode: Int = 200
 
   /**
     * Getting book list
@@ -26,9 +27,6 @@ class BookService {
 
     bookList = getResultSet(query)
 
-//    jsonString = gson.toJson(bookList)
-//
-//    jsonString
     bookList
 
   }
@@ -74,13 +72,16 @@ class BookService {
     * @param jsonString
     * @return String
     */
-  def addBook(jsonString: String): String =
+  def addBook(exchange: HttpExchange): String =
   {
     var response: String = "Book added successfully"
 
     implicit val formats = DefaultFormats
 
     println("Add Book method")
+
+    jsonString  =  scala.io.Source.fromInputStream(exchange.getRequestBody).mkString
+
     val newBookJsonString = parse(jsonString)
     val newBook = newBookJsonString.extract[Book]
 
