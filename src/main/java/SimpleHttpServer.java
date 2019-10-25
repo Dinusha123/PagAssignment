@@ -35,7 +35,7 @@ public class SimpleHttpServer {
                     "\t\"price\": 15000,\n" +
                     "\t\"description\": \" Test description \"\n" +
                     "}" ;
-            writeResponse(httpExchange,response);
+            writeResponse(httpExchange,response,200);
         }
     }
 
@@ -46,6 +46,7 @@ public class SimpleHttpServer {
             BookService bookService = new BookService();
             String method = httpExchange.getRequestMethod();
             String response = "";
+            int statusCode = 200;
 
             if("GET".equals(method)){
 
@@ -59,8 +60,8 @@ public class SimpleHttpServer {
 
                     if("".equals(response)){
                         response = "Invalid book id";
+                        statusCode = 400;
                     }
-
                 }
             }else if ("POST".equals(method)){
                 StringBuilder body = new StringBuilder();
@@ -76,17 +77,18 @@ public class SimpleHttpServer {
 
                     System.out.println("Error"+err.toString());
                     response = "Book not added";
+                    statusCode = 400;
                 }
             }
 
-            writeResponse(httpExchange,response);
+            writeResponse(httpExchange,response,statusCode);
         }
     }
 
 
-    public static void writeResponse(HttpExchange httpExchange, String response) throws IOException {
+    public static void writeResponse(HttpExchange httpExchange, String response, int statusCode) throws IOException {
 
-        httpExchange.sendResponseHeaders(200, 0);
+        httpExchange.sendResponseHeaders(statusCode, 0);
         OutputStream os = httpExchange.getResponseBody();
         os.write(response.getBytes());
         os.close();
