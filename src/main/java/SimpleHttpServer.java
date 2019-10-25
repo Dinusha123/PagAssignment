@@ -1,14 +1,9 @@
-import bookstore.service.BookService;
+import bookstore.controller.BookController;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import org.json.JSONException;
 import java.io.*;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Map;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class SimpleHttpServer {
     public static void main(String[] args) throws Exception {
@@ -18,7 +13,7 @@ public class SimpleHttpServer {
         server.createContext("/info", new MyHandler());
 
         // book controller
-        server.createContext("/store/books", new BooksController());
+        server.createContext("/store/books", new BookController());
 
         server.setExecutor(null); // creates a default executor
         server.start();
@@ -39,77 +34,12 @@ public class SimpleHttpServer {
         }
     }
 
-    static class BooksController implements HttpHandler {
-        @Override
-        public void handle(HttpExchange httpExchange) throws IOException {
-
-            BookService bookService = new BookService();
-            String method = httpExchange.getRequestMethod();
-            String response = "";
-            int statusCode = 200;
-
-            if("GET".equals(method)){
-
-                if(httpExchange.getRequestURI().getQuery() == null){
-                    // return list of book names
-                    response = bookService.getBooks();
-                }else {
-                    // return book info data by id
-                    Map <String,String>params = SimpleHttpServer.queryToMap(httpExchange.getRequestURI().getQuery());
-                    response = bookService.bookInfoById(params.get("id"));
-
-                    if("".equals(response)){
-                        response = "Invalid book id";
-                        statusCode = 400;
-                    }
-                }
-            }else if ("POST".equals(method)){
-                StringBuilder body = new StringBuilder();
-                try (InputStreamReader reader = new InputStreamReader(httpExchange.getRequestBody(), UTF_8)) {
-                    char[] buffer = new char[256];
-                    int read;
-                    while ((read = reader.read(buffer)) != -1) {
-                        body.append(buffer, 0, read);
-                    }
-                    response = bookService.addBook(body.toString());
-
-                }catch (JSONException err){
-
-                    System.out.println("Error"+err.toString());
-                    response = "Book not added";
-                    statusCode = 400;
-                }
-            }
-
-            writeResponse(httpExchange,response,statusCode);
-        }
-    }
-
-
     public static void writeResponse(HttpExchange httpExchange, String response, int statusCode) throws IOException {
 
         httpExchange.sendResponseHeaders(statusCode, 0);
         OutputStream os = httpExchange.getResponseBody();
         os.write(response.getBytes());
         os.close();
-    }
-
-    /**
-     * returns the url parameters in a map
-     * @param query
-     * @return map
-     */
-    public static Map<String, String> queryToMap(String query){
-        Map<String, String> result = new HashMap<String, String>();
-        for (String param : query.split("&")) {
-            String pair[] = param.split("=");
-            if (pair.length>1) {
-                result.put(pair[0], pair[1]);
-            }else{
-                result.put(pair[0], "");
-            }
-        }
-        return result;
     }
 
 }

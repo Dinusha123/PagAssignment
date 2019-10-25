@@ -4,6 +4,7 @@ import java.sql.{Connection, PreparedStatement}
 import bookstore.DbConnection
 import bookstore.model.Book
 import com.google.gson.Gson
+import com.sun.net.httpserver.HttpExchange
 import net.liftweb.json._
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
@@ -19,15 +20,13 @@ class BookService {
     * Getting book list
     * @return jason string of entity list
     */
-  def getBooks(): String = {
+  def getBooks(): mutable.MutableList[Book] = {
 
     var bookList= mutable.MutableList[Book]()
 
     bookList = getResultSet(query)
 
-    jsonString = gson.toJson(bookList)
-
-    jsonString
+    bookList
 
   }
 
@@ -59,27 +58,18 @@ class BookService {
     * @param bookId
     * @return json string of a book entity
     */
-  def bookInfoById(bookId: String): String =
+  def bookInfoById(bookId: String): Book =
   {
-
     toInt(bookId) match {
-
       case Success(bookId) =>
 
         var bookList= mutable.MutableList[Book]()
         bookList = getResultSet(query)
         val book = bookList.filter(_.id==bookId )
-        try{
-          jsonString = gson.toJson(book(0))
-          //jsonString = gson.toJson(bookList(5))
-        }catch {
-          case e => e.printStackTrace
-        }
+        book(0)
 
-      case Failure(s) => jsonString = "Please enter a number ..."
+      case Failure(s) => null
     }
-
-    jsonString
   }
 
   /**
@@ -87,13 +77,16 @@ class BookService {
     * @param jsonString
     * @return String
     */
-  def addBook(jsonString: String): String =
+  def addBook(exchange: HttpExchange): String =
   {
     var response: String = "Book added successfully"
 
     implicit val formats = DefaultFormats
 
     println("Add Book method")
+
+    jsonString  =  scala.io.Source.fromInputStream(exchange.getRequestBody).mkString
+
     val newBookJsonString = parse(jsonString)
     val newBook = newBookJsonString.extract[Book]
 
