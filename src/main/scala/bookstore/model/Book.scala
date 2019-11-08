@@ -1,6 +1,6 @@
 package bookstore.model
 
-class Book {
+class Book extends Serializable {
 
   private var _id: Int = _
   private var _name: String = _

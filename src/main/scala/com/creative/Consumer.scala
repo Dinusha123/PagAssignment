@@ -1,42 +1,36 @@
 package com.creative
 
+import bookstore.service.BookService
 import com.rabbitmq.client.{CancelCallback, ConnectionFactory, DeliverCallback}
 
 object Consumer extends App{
 
-  private val BOOK_QUEUE_CONSUME = "book_store";
+  private val BOOK_QUEUE_CONSUME = "list";
+  var bookService: BookService = new BookService
 
-//  override def main(args: Array[String]) = {
+  // initiate rabbitMQ
+  val factory = new ConnectionFactory()
+  factory.setHost("localhost")
+  val connection = factory.newConnection()
+  val channel = connection.createChannel()
+  channel.queueDeclare(BOOK_QUEUE_CONSUME,false,false,false,null)
+  println(s"waiting for book list: Queue Name :$BOOK_QUEUE_CONSUME")
 
-    val factory = new ConnectionFactory()
-    factory.setHost("localhost")
+  val callback: DeliverCallback = (consumerTag, delivery) => {
+    val message = new String(delivery.getBody, "UTF-8")
+    println(s"Received book list $message")
+  }
 
-    val connection = factory.newConnection()
-    val channel = connection.createChannel()
+  val cancel: CancelCallback = consumerTag => {}
 
-    channel.queueDeclare(BOOK_QUEUE_CONSUME,false,false,false,null)
-    println(s"waiting for messages on $BOOK_QUEUE_CONSUME")
+  val autoAck = true
+  channel.basicConsume(BOOK_QUEUE_CONSUME, autoAck, callback, cancel)
 
-    val callback: DeliverCallback = (consumerTag, delivery) => {
-      val message = new String(delivery.getBody, "UTF-8")
-      println(s"Received $message with tag $consumerTag")
-    }
+  while(true) {
+    Thread.sleep(1000)
+  }
 
-    val cancel: CancelCallback = consumerTag => {}
-
-    val autoAck = true
-    channel.basicConsume(BOOK_QUEUE_CONSUME, autoAck, callback, cancel)
-
-    while(true) {
-      // we don't want to kill the receiver,
-      // so we keep him alive waiting for more messages
-      Thread.sleep(1000)
-    }
-
-    channel.close()
-    connection.close()
-
-
-//  }
+  channel.close()
+  connection.close()
 
 }

@@ -8,7 +8,7 @@ import scala.collection.JavaConversions._
 import scala.util.parsing.json.JSONArray
 
 
-class BookController extends HttpHandler{
+class BookController extends HttpHandler  {
 
   val logger = Logger.getLogger(this.getClass.toString())
   var hits = 0
