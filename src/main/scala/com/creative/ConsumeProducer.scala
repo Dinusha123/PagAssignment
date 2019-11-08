@@ -38,35 +38,37 @@ object ConsumeProducer extends App{
   channel.close()
   connection.close()
 
-  def publishBookList(): Unit ={
-    val exchange = ""
-    channel.queueDeclare(BOOK_QUEUE_CONSUME,false,false,false,null)
-
-    //converting list into Json string
-    val bookList = gson.toJson(bookListConsumerStringList)
-
-    //publishing the array
-    channel.basicPublish(exchange, BOOK_QUEUE_CONSUME, null, bookList.getBytes())
-    println(s"Sent book list for consumers  $bookList")
-  }
-
+  /**
+    * This method is used to consume book details
+    * from the sender
+    * using the queue BOOK_QUEUE
+    */
   def consumeBookData(): Unit ={
     val callback: DeliverCallback = (consumerTag, delivery) => {
       val message = new String(delivery.getBody, "UTF-8")
       println(s"Received message from Sender $message")
-
       // creating a book object list
       bookListConsumerStringList += message
       publishBookList()
-
     }
-
     val cancel: CancelCallback = consumerTag => {}
-
     // consuming from the queue
     val autoAck = true
     channel.basicConsume(BOOK_QUEUE, autoAck, callback, cancel)
   }
 
-
+  /**
+    * This method is used to send all book list for
+    * consumers
+    * using the queue BOOK_QUEUE_CONSUME
+    */
+  def publishBookList(): Unit ={
+    val exchange = ""
+    channel.queueDeclare(BOOK_QUEUE_CONSUME,false,false,false,null)
+    //converting list into Json string
+    val bookList = gson.toJson(bookListConsumerStringList)
+    //publishing book list to queue BOOK_QUEUE_CONSUME
+    channel.basicPublish(exchange, BOOK_QUEUE_CONSUME, null, bookList.getBytes())
+    println(s"Sent book list for consumers  $bookList\n")
+  }
 }

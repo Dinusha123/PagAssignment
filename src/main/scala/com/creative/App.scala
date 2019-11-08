@@ -1,15 +1,23 @@
 package com.creative
 
+import bookstore.model.Book
+
 /**
  * @author ${user.name}
  */
 object App {
-  
-  def foo(x : Array[String]) = x.foldLeft("")((a,b) => a + b)
-  
+
   def main(args : Array[String]) {
-    println( "Hello World!!!" )
-    println("concat arguments = " + foo(args))
+    println( "Welcome to the Book Store" )
+    // You pass any thing at runtime
+    // that will be print on the console
+    for(arg<-args)
+    {
+      println(arg);
+
+      val  book: Book = new Book(200,arg,"Author Sample"+arg,2500,"Sample Description "+arg)
+      Sender.runSender(book);
+    }
   }
 
 }

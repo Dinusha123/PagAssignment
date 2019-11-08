@@ -18,11 +18,9 @@ object Consumer extends App{
 
   val callback: DeliverCallback = (consumerTag, delivery) => {
     val message = new String(delivery.getBody, "UTF-8")
-    println(s"Received book list $message")
+    println(s"\nReceived book list $message")
   }
-
   val cancel: CancelCallback = consumerTag => {}
-
   val autoAck = true
   channel.basicConsume(BOOK_QUEUE_CONSUME, autoAck, callback, cancel)
 
