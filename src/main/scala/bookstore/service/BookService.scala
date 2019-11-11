@@ -230,5 +230,13 @@ class BookService {
     obj
   }
 
+  /**
+    * This method is used to check whether the
+    * given string is a decimal number of not
+    * @param x
+    * @return boolean
+    */
+  def isAllDigits(x: String) = x forall Character.isDigit
+
 
 }
