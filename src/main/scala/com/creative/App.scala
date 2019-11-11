@@ -14,11 +14,11 @@ object App {
 
     def optionList(): Unit ={
       println( "Please enter 1 to enter book details" )
-      println( "Please enter 2 to exit" )
+      println( "Please enter 2 to get the details of a book" )
+      println( "Please enter 3 to get the book list" )
+      println( "Please enter 9 to exit" )
 
       val input: String = scala.io.StdIn.readLine("Please select the option(1 or 2) ")
-      println();
-
       if(1 == input.toInt){
         sendBookData
       }else

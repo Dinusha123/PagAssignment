@@ -31,6 +31,7 @@ object Sender extends App{
       val bookJson = gson.toJson(book)
       channel.basicPublish(exchange, BOOK_QUEUE, null, bookJson.getBytes())
       println(s"sent book details by Sender : $bookJson")
+      println()
     }
 
     channel.close()
