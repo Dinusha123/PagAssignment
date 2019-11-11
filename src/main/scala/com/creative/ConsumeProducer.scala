@@ -1,12 +1,13 @@
 package com.creative
 
-import bookstore.model.Book
+
 import bookstore.service.BookService
 import com.google.gson.Gson
 import com.rabbitmq.client.{CancelCallback, ConnectionFactory, DeliverCallback}
-import net.liftweb.json.{DefaultFormats, parse}
-
+import net.liftweb.json._
 import scala.collection.mutable
+
+case class Book(id: Int, name: String, author: String , price: Double , description: String)
 
 object ConsumeProducer extends App{
 
@@ -14,12 +15,12 @@ object ConsumeProducer extends App{
   private val BOOK_LIST_QUEUE = "list";
   private val BOOK_QUEUE = "set";
   implicit val formats = DefaultFormats
+
   val exchange = ""
 
   var bookService: BookService = new BookService
   val gson = new Gson
   var bookList= mutable.MutableList[Book]()
-  var bookListConsumerStringList= mutable.MutableList[String]()
 
   // initiate rabbitMQ
   val factory = new ConnectionFactory()
@@ -47,14 +48,14 @@ object ConsumeProducer extends App{
       println(s"Received message from Client $message")
 
       // if the sent message is a decimal
-     if(message.contains("all")){
-       //publish book list
-       publishBookList()
-     }else if(bookService.isAllDigits(message.replaceAll("\"",""))){
-       // if the sent message is a decimal
-       val bookId = message.replaceAll("\"","").toInt
-       publishBookDetailsById(bookId)
-     }else{
+      if(message.contains("all")){
+        //publish book list
+        publishBookList()
+      }else if(bookService.isAllDigits(message.replaceAll("\"",""))){
+        // if the sent message is a decimal
+        val bookId = message.replaceAll("\"","").toInt
+        publishBookDetailsById(bookId)
+      }else{
         // add book
         addBook(message)
       }
@@ -90,20 +91,16 @@ object ConsumeProducer extends App{
   }
 
   def publishQueue(value:Any,queue:String)(): Unit ={
-//    channel.queueDeclare(queue,false,false,false,null)
+    //    channel.queueDeclare(queue,false,false,false,null)
     //converting list into Json string
     val bookListToPublish = gson.toJson(value)
     //publishing book list to queue BOOK_QUEUE_CONSUME
-
-
 
     try{
       channel.basicPublish(exchange, queue, null, bookListToPublish.getBytes())
     } catch {
       case e => e.printStackTrace
     }
-
-
 
     println(s"PUBLISH :"+value.toString+ "\n")
   }
@@ -114,18 +111,16 @@ object ConsumeProducer extends App{
     */
   def addBook(bookJsonString: String): Unit ={
 
-    // converting json string to book object and save to a list
-    val newBookJsonString = parse(bookJsonString)
-    var newBook = newBookJsonString.extract[Book]
-    newBook.id= bookList.length+1;
+    var newBook = parse(bookJsonString).extract[Book]
+    val newlyAddedBook = Book(bookList.length+1,newBook.name,newBook.author,newBook.price,newBook.description)
 
-    bookList += newBook
+    bookList += newlyAddedBook
     println("Added book to book list")
   }
 
-    while(true) {
-      Thread.sleep(1000)
-    }
+  while(true) {
+    Thread.sleep(1000)
+  }
 
   channel.close()
   connection.close()
