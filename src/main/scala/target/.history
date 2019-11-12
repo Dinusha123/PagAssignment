@@ -1,0 +1,3 @@
+cd com/creative
+scalac Consumer.scala
+scalac Consumer.scala;
