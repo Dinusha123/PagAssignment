@@ -1,11 +1,14 @@
 package bookstore.service
 
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 import java.sql.{Connection, PreparedStatement}
+
 import bookstore.DbConnection
 import bookstore.model.Book
 import com.google.gson.Gson
 import com.sun.net.httpserver.HttpExchange
 import net.liftweb.json._
+
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
@@ -86,7 +89,6 @@ class BookService {
     println("Add Book method")
 
     jsonString  =  scala.io.Source.fromInputStream(exchange.getRequestBody).mkString
-
     val newBookJsonString = parse(jsonString)
     val newBook = newBookJsonString.extract[Book]
 
@@ -109,7 +111,7 @@ class BookService {
       preparedStmt.execute
     } catch {
       case e => e.printStackTrace
-        response = "Book not added..."
+//        response = "Book not added..."
     }
 
     preparedStmt.close()
@@ -176,6 +178,65 @@ class BookService {
   def toInt(s: String): Try[Int] = Try {
     Integer.parseInt(s.trim)
   }
+
+  /**
+    * This method is used to convert an object to
+    * a bitearray
+    * @param value
+    * @return Array[Byte]
+    */
+  def serialise(value: Any): Array[Byte] = {
+    val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
+    val oos = new ObjectOutputStream(stream)
+    oos.writeObject(value)
+    oos.close()
+    stream.toByteArray
+  }
+
+  /**
+    * This method is used to deserialise the given byte array
+    * @param bytes
+    * @return
+    */
+  def deserialise(bytes: Array[Byte]): Any = {
+    val ois = new ObjectInputStream(new ByteArrayInputStream(bytes))
+    val value = ois.readObject
+    ois.close()
+    value
+  }
+
+  def toBytes(obj: AnyRef): Array[Byte] = {
+    val baos = new ByteArrayOutputStream()
+    val oos = new ObjectOutputStream(baos)
+
+    oos.writeObject(obj)
+    val bytes = baos.toByteArray
+
+    oos.close()
+    baos.close()
+
+    bytes
+  }
+
+  def fromBytes[T](bytes: Array[Byte]): T = {
+    val bis = new ByteArrayInputStream(bytes)
+    val ois = new ObjectInputStream(bis)
+
+    val obj = ois.readObject().asInstanceOf[T]
+
+    bis.close()
+    ois.close()
+
+    obj
+  }
+
+  /**
+    * This method is used to check whether the
+    * given string is a decimal number of not
+    * @param x
+    * @return boolean
+    */
+  def isAllDigits(x: String) = x forall Character.isDigit
 
 
 }
