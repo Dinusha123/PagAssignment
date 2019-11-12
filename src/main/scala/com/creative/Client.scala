@@ -5,19 +5,16 @@ import com.rabbitmq.client.{CancelCallback, ConnectionFactory, DeliverCallback}
 import net.liftweb.json.DefaultFormats
 import net.liftweb.json.Serialization.write
 
-import scala.collection.mutable
-
 /**
   * @author ${user.name}
   */
-object App {
+object Client {
 
   private val BOOK_CRUD_QUEUE = "crud";
   private val BOOK_LIST_QUEUE = "list";
   private val BOOK_QUEUE = "set";
   val exchange = ""
   var bookService: BookService = new BookService
-  var bookList= mutable.MutableList[Book]()
   implicit val formats = DefaultFormats
 
   // initiate rabbitMQ
@@ -32,45 +29,48 @@ object App {
   def main(args : Array[String]) {
     println( "*** Welcome to the Book Store ***\n" )
 
-    optionList
+    optionList()
 
     def optionList(): Unit ={
-      println( "Please enter 1 to enter book details" )
-      println( "Please enter 2 to get the details of a book by id" )
-      println( "Please enter 3 to get the book list" )
-      println( "Please enter 9 to exit" )
+      println( "-------------- OPTION LIST ---------------" )
+      println( "Enter 1 to enter book details" )
+      println( "Enter 2 to get the details of a book by id" )
+      println( "Enter 3 to get the book list" )
+      println( "Enter 9 to exit" )
+      println( "------------------------------------------" )
 
-      val input: String = scala.io.StdIn.readLine("Please select the option(1 or 2 or 3 or 9) ")
-//            val input: String = "1"
+      var option: String = scala.io.StdIn.readLine("Please select the option(1 or 2 or 3 or 9) : ")
+      option = validateEmptyInputs("option",option)
 
-
-      if(bookService.isAllDigits(input)){
-        if(1 == input.toInt){
-          // method call for entering book data
-          addBookData
-          optionList
-        }else if(2 == input.toInt){
-          // method call for get the book details by id
-          getBookDetailsById
-        }else if(3 == input.toInt){
-          // method call for retrieving book list
-          getBookList
-        }else if (9 == input.toInt){
+      if(bookService.isAllDigits(option)){
+        if(1 == option.toInt){
+          // method call to add book data
+          addBookData()
+          optionList()
+        }else if(2 == option.toInt){
+          // method call to get the book details by id
+          bookDetailsById()
+        }else if(3 == option.toInt){
+          // method call to retrieving book list
+          readBookList()
+        }else if (9 == option.toInt){
           println( "Exit" )
           System.exit(0)
         }else
         {
-          println( "Please select the option" )
+          println()
+          println( "Please select the option from the below list" )
+          optionList()
         }
       }else{
-        optionList
+        optionList()
       }
     }
 
     /**
       * This method is used to get the book list
       */
-    def getBookList(): Unit ={
+    def readBookList(): Unit ={
       println("Getting book list")
       val info = "all"
       publishRequest(info)
@@ -82,55 +82,53 @@ object App {
     /**
       * This method is used to get book details
       * for given id
-      * @param id
       */
-    def getBookDetailsById(): Unit ={
+    def bookDetailsById(): Unit ={
       var bookId: String = scala.io.StdIn.readLine("Please enter book id  : ")
       //validation for price
-      while(!bookService.isAllDigits(bookId)){
-        bookId = scala.io.StdIn.readLine("Please enter number for book id : ")
-      }
-      //publish the book id inorder to get book data
+      bookId = validateEmptyInputs("bookId",bookId)
+      //publish the book id in order to get book data
       publishRequest(bookId)
       println(s"Consuming book data by id \n")
       consumeData(BOOK_QUEUE)
-
     }
 
     /**
-      * This method is used to publish/add book details
-      * @param book
+      * This method is used to
+      * publish/add book details
+      *
       */
     def addBookData(): Unit ={
       //getting user inputs
       var name: String = scala.io.StdIn.readLine("Please enter book name  : ")
+      name = validateEmptyInputs("name",name)
+
       var author: String = scala.io.StdIn.readLine("Please enter author's name  : ")
+      author = validateEmptyInputs("author",author)
+
       var price: String = scala.io.StdIn.readLine("Please enter book price  : ")
+      price = validateEmptyInputs("price",price)
+
       var description: String = scala.io.StdIn.readLine("Please enter book description  : ")
-      //validation for price
-      while(!bookService.isAllDigits(price)){
-        price = scala.io.StdIn.readLine("Please enter number for price : ")
-      }
+      description = validateEmptyInputs("description",description)
+
       // creating book object and publishing
       var  book: Book =  Book(2,name,author,price.toInt,description)
       println();
       println(separateLine)
       println();
 
-      //adding book details to a list
-      bookList += book
-
       // publishing
-      for(book: Book <- bookList){
-        publishRequest(book)
-      }
+      publishRequest(book)
+
     }
 
     def publishRequest(value: Any): Unit ={
       val bookJson = write(value)
       channel.basicPublish(exchange, BOOK_CRUD_QUEUE, null, bookJson.getBytes())
-      println(s"sent book details by Sender : $bookJson")
+      println(s"Sent book data : $bookJson")
       println()
+      println(separateLine)
     }
 
     /**
@@ -144,7 +142,7 @@ object App {
         println()
         println(separateLine)
         println()
-        println(s"Received Data :  $message")
+        println(s"Received data :  $message")
         println()
         println(separateLine)
       }
@@ -152,7 +150,32 @@ object App {
       // consuming from the queue:BOOK_LIST_QUEUE
       val autoAck = true
       channel.basicConsume(queue, autoAck, callback, cancel)
-      optionList
+      optionList()
+    }
+
+    /**
+      * This method is used to validate user input for empty values
+      * @param property
+      * @return
+      */
+    def validateEmptyInputs(property: String, input:String): String ={
+      var value = input
+      // validation for null inputs
+      if(input.toString.length == 0 ){
+        while(value.toString.length == 0){
+          value = scala.io.StdIn.readLine("Please enter value for "+property+"  :")
+        }
+      }
+      //validation for numbers
+      if(property == "price" || property == "bookId" || property == "option"){
+        while(!bookService.isAllDigits(value)){
+          value = scala.io.StdIn.readLine("Please enter number for "+property+"  :")
+          while(value.toString.length == 0){
+            value = scala.io.StdIn.readLine("Please enter number for "+property+"  :")
+          }
+        }
+      }
+      value
     }
 
     while(true) {
