@@ -30,6 +30,7 @@ public class SimpleHttpServer {
                     "\t\"price\": 15000,\n" +
                     "\t\"description\": \" Test description \"\n" +
                     "}" ;
+            
             writeResponse(httpExchange,response,200);
         }
     }
